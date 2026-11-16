@@ -2,7 +2,9 @@ package in.shubham.gateX.management.controller;
 
 import in.shubham.gateX.management.dto.RequestDto.OrganizationRequest;
 import in.shubham.gateX.management.dto.RequestDto.OrganizationStatusRequest;
+import in.shubham.gateX.management.dto.RequestDto.TenantAdminRequest;
 import in.shubham.gateX.management.dto.ResponseDto.OrganizationResponse;
+import in.shubham.gateX.management.dto.ResponseDto.TenantAdminResponse;
 import in.shubham.gateX.management.service.OrganizationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,9 @@ public class PlatformOrganizationController {
 
     private final OrganizationService organizationService;
 
-    @PostMapping()
+    // INFO : endpoints for organizations
+
+    @PostMapping
     public ResponseEntity<OrganizationResponse> createOrganization(@Valid @RequestBody OrganizationRequest request){
         return ResponseEntity.status(HttpStatus.CREATED).body(organizationService.createOrganization(request)) ;
     }
@@ -48,6 +52,32 @@ public class PlatformOrganizationController {
         organizationService.deleteOrganizationById(id);
         return ResponseEntity.noContent().build();
     }
+
+    // INFO : endpoint for Tenant Admin
+
+    @PostMapping("/{organizationId}/tenant-admin")
+    public ResponseEntity<TenantAdminResponse> createTenantAdmin(@PathVariable Long organizationId,
+                                                                 @Valid @RequestBody TenantAdminRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(organizationService.createTenantAdmin(organizationId, request));
+    }
+
+    @GetMapping("/{organizationId}/tenant-admin")
+    public ResponseEntity<TenantAdminResponse> getTenantAdmin(@PathVariable Long organizationId) {
+        return ResponseEntity.ok(organizationService.getTenantAdmin(organizationId));
+    }
+
+    @PutMapping("/{organizationId}/tenant-admin")
+    public ResponseEntity<TenantAdminResponse> updateTenantAdmin(@PathVariable Long organizationId,
+                                                                 @Valid @RequestBody TenantAdminRequest request) {
+        return ResponseEntity.ok(organizationService.updateTenantAdmin(organizationId, request));
+    }
+
+    @DeleteMapping("/{organizationId}/tenant-admin")
+    public ResponseEntity<Void> deleteTenantAdmin(@PathVariable Long organizationId) {
+        organizationService.deleteTenantAdmin(organizationId);
+        return ResponseEntity.noContent().build();
+
 
 
 

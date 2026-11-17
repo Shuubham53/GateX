@@ -1,17 +1,16 @@
 package in.shubham.gateX.management.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@NoArgsConstructor
 @Table(name = "management_users")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 public class ManagementUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

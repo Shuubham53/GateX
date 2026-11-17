@@ -1,16 +1,24 @@
 package in.shubham.gateX.management.service;
 
 import in.shubham.gateX.management.Exception.ApiException;
+import in.shubham.gateX.management.Repository.ManagementUserRepository;
 import in.shubham.gateX.management.Repository.OrganizationRepository;
+import in.shubham.gateX.management.Repository.RoleRepository;
 import in.shubham.gateX.management.dto.RequestDto.OrganizationRequest;
 import in.shubham.gateX.management.dto.RequestDto.OrganizationStatusRequest;
+import in.shubham.gateX.management.dto.RequestDto.TenantAdminRequest;
 import in.shubham.gateX.management.dto.RequestDto.TenantOrganizationRequest;
 import in.shubham.gateX.management.dto.ResponseDto.OrganizationResponse;
+import in.shubham.gateX.management.dto.ResponseDto.TenantAdminResponse;
+import in.shubham.gateX.management.entity.ManagementUser;
 import in.shubham.gateX.management.entity.Organization;
 import in.shubham.gateX.management.entity.OrganizationStatus;
+
+import in.shubham.gateX.management.entity.Role;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +32,9 @@ public class OrganizationService {
 
     private final OrganizationRepository organizationRepository;
     private final TenantContext tenantContext;
+    private final ManagementUserRepository managementUserRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Transactional
     public  OrganizationResponse createOrganization(OrganizationRequest request) {
@@ -132,4 +143,44 @@ public class OrganizationService {
         organization.setUpdatedAt(LocalDateTime.now());
         return OrganizationResponse.from(organization);
     }
+
+    @Transactional
+    public TenantAdminResponse createTenantAdmin(Long organizationId, TenantAdminRequest request) {
+
+        Organization organization = getOrganization(organizationId);
+
+        if (managementUserRepository.existsByOrganization_IdAndRole_Name(organizationId, "TENANT_ADMIN")) {
+            throw new ApiException(HttpStatus.CONFLICT, "This organization already has a tenant administrator");
+        }
+
+        String username = request.getUsername().trim().toLowerCase();
+        if (managementUserRepository.existsByUsername(username)) {
+            throw new ApiException(HttpStatus.CONFLICT, "Username already exists");
+        }
+        Role role = roleRepository.findByName("TENANT_ADMIN").orElseThrow(() ->
+                new ApiException(HttpStatus.INTERNAL_SERVER_ERROR,"TENANT_ADMIN role is missing"));
+
+        ManagementUser managementUser = ManagementUser.builder()
+                .username(request.getUsername())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .organization(organization)
+                .enabled(request.isEnabled())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .role(role)
+                .build();
+        managementUserRepository.save(managementUser);
+
+        return TenantAdminResponse.from(managementUser);
+    }
+
+    public TenantAdminResponse getTenantAdmin(Long organizationId) {
+        return TenantAdminResponse.from(getTenantAdminEntity(organizationId));
+    }
+
+    private ManagementUser getTenantAdminEntity(Long organizationId){
+        return managementUserRepository.findByOrganizationId(organizationId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND,"Tenant administrator not found"));
+    }
+
 }

@@ -16,7 +16,6 @@ import in.shubham.gateX.management.entity.OrganizationStatus;
 
 import in.shubham.gateX.management.entity.Role;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -183,4 +182,23 @@ public class OrganizationService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND,"Tenant administrator not found"));
     }
 
+    @Transactional
+    public TenantAdminResponse updateTenantAdmin(Long organizationId, TenantAdminRequest request) {
+        ManagementUser managementUser = getTenantAdminEntity(organizationId);
+        if(!managementUser.getUsername().equalsIgnoreCase(request.getUsername())
+                && managementUserRepository.existsByUsername(request.getUsername())){
+            throw new ApiException(HttpStatus.CONFLICT,"Username already exist");
+        }
+        managementUser.setUsername(request.getUsername());
+        managementUser.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        managementUser.setUpdatedAt(LocalDateTime.now());
+        managementUser.setEnabled(request.isEnabled());
+
+        return TenantAdminResponse.from(managementUser);
+    }
+
+    public void deleteTenantAdmin(Long organizationId) {
+        ManagementUser managementUser = getTenantAdminEntity(organizationId);
+        managementUserRepository.delete(managementUser);
+    }
 }

@@ -19,6 +19,7 @@ public class TenantOrganizationController {
     private ResponseEntity<OrganizationResponse> getOwnOrganization(){
         return ResponseEntity.ok(organizationService.getOwnOrganization());
     }
+
     @PutMapping
     private ResponseEntity<OrganizationResponse> updateOwnOrganization(@Valid @RequestBody TenantOrganizationRequest request){
         return ResponseEntity.ok(organizationService.updateOwnOrganization(request));

@@ -19,18 +19,21 @@ import java.util.Set;
 @Table(name = "api_routes")
 public class ApiRoute {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id",nullable = false)
-    private String routeId;
+    @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
+
+    private String routeId;
     private String name;
     private String pathPattern;
     private String targetBaseUrl;
     private String targetPathPrefix;
-    private Integer requestPerMinute;
-    private Integer requestTimeoutMs;
+    private Integer requestsPerMinute;
+    private Integer responseTimeoutMs;
     private boolean idempotencyEnabled;
     private boolean active;
     private Long configurationVersion;

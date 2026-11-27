@@ -6,7 +6,6 @@ import in.shubham.gateX.management.dto.ResponseDto.RouteResponse;
 import in.shubham.gateX.management.service.RouteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +31,7 @@ public class TenantRouteController {
 
     @GetMapping("/routes/{id}")
     public ResponseEntity<RouteResponse> getRouteById(@PathVariable Long id){
-        return ResponseEntity.ok(routeService.getRouteById());
+        return ResponseEntity.ok(routeService.getRouteById(id));
     }
 
     @PutMapping("/routes/{id}")
